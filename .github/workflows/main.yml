@@ -1,0 +1,52 @@
+name: Build osquery on Windows
+
+on:
+  push:
+    branches:
+      - main  # Adjust this branch name to match your default branch
+
+jobs:
+  build:
+    runs-on: windows-latest  # Use the latest Windows runner
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x  # Use the appropriate Python version
+
+    - name: Install Windows Prerequisites
+      run: |
+        # Install CMake
+        choco install cmake --version 3.21.4
+        # Install Visual Studio Build Tools (adjust workload as needed)
+        choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Component.VC.14.28.x86.x64 --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --add Microsoft.VisualStudio.Component.VC.ClangToolset --add Microsoft.VisualStudio.Workload.NetCoreBuildTools --add Microsoft.VisualStudio.Component.NuGet.Packaging --add Microsoft.VisualStudio.Component.TextTemplating --add Microsoft.VisualStudio.Component.Wix.Toolset --add Microsoft.VisualStudio.Component.Windows10SDK.19041"
+        # Install Git for Windows
+        choco install git
+        # Install Python 3 dependencies
+        pip install setuptools psutil timeout_decorator thrift==0.11.0 osquery pywin32
+
+    - name: Download and Build Source
+      run: |
+        # Clone the osquery repository
+        git clone https://github.com/osquery/osquery
+        cd osquery
+
+        # Configure
+        mkdir build
+        cd build
+        cmake -G "Visual Studio 16 2019" -A x64 ..
+
+        # Build
+        cmake --build . --config RelWithDebInfo -j10  # Number of projects to build in parallel
+
+    - name: Build osquery Packages
+      run: |
+        # Create a destination folder and set its path in the DESTDIR environment variable
+        cd build_folder
+        mkdir package_data
+        $Env:DESTDIR = Join-Path -Path $(pwd) -ChildPath package_data
+        cmake --build . --target install --config Release
