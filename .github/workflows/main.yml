@@ -24,6 +24,12 @@ jobs:
       env:
         chocolateyBeforePath: true  # Make sure Chocolatey is in PATH
 
+    - name: Set Visual Studio Environment Variables
+      run: |
+        $env:VS150COMNTOOLS = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\Common7\Tools'
+        $env:VSINSTALLDIR = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools'
+      shell: cmd
+
     - name: Download and Build Source
       run: |
         # Clone the osquery repository
