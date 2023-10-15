@@ -43,6 +43,7 @@ jobs:
     - name: Configure and Build osquery
       run: |
         # Navigate to the osquery directory
+        git clone https://github.com/osquery/osquery
         cd osquery
 
         # Create a build directory and configure the build
