@@ -53,13 +53,13 @@ jobs:
 
         # Build osquery
         cmake --build . --config RelWithDebInfo -j10
-
-        # Generate package data and set DESTDIR
+      shell: powershell
+    - name: package_data
+      run: |
         mkdir package_data
         $Env:DESTDIR = (Get-Location).Path + "\package_data"
         cmake --build . --target install --config Release
-      shell: powershell
-
+        
     - name: Upload package_data
       uses: actions/upload-artifact@v2
       with:
