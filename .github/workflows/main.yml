@@ -42,18 +42,15 @@ jobs:
     
     - name: Configure and Build osquery
       run: |
-        # Navigate to the osquery directory
         git clone https://github.com/osquery/osquery
         cd osquery
-    
-        # Create a build directory and configure the build
         mkdir build
         cd build
         cmake -G "Visual Studio 16 2019" -A x64 ..
-    
-        # Build osquery
         cmake --build . --config RelWithDebInfo -j10
     
+    - name: package
+      run: |
         # Generate package data and set DESTDIR
         mkdir package_data
         $Env:DESTDIR = (Get-Location).Path + "\package_data"
