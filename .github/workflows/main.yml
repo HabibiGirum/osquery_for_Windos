@@ -1,4 +1,4 @@
-name: build
+name: build windows-latest 
 on: [push, pull_request]
 jobs:
   build_windows:
