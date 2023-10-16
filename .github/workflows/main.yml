@@ -22,9 +22,8 @@ jobs:
           cmake -G "Visual Studio 16 2019" -A x64 ..
       - name: Build osquery
         run: |
-          cd osquery/build 
+          cd ./osquery/build 
           cmake --build . --config Release --target osqueryd osqueryi
-        working-directory: osquery
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
