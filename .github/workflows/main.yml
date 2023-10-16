@@ -1,32 +1,66 @@
-name: build windows-latest 
-on: [push, pull_request]
+name: Build osquery on Windows
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
-  build_windows:
-    name: Build Windows
+  build:
     runs-on: windows-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Install dependencies
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install prerequisites
         run: |
-          choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
-          choco install -y python3 --params "/InstallDir:C:\Python37"
-          choco install -y git
-          choco install -y visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
-      - name: Configure osquery
+          # Add registry key for long paths
+          REG ADD HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
+          # Install prerequisites using Chocolatey
+          choco install cmake --version=3.21.4 -y
+          choco install git -y
+          choco install python3 -y
+          choco install wixtoolset -y
+          choco install strawberryperl -y
+          choco install 7zip -y
+        shell: cmd
+
+      - name: Install Visual Studio 2019
+        run: |
+          choco install visualstudio2019buildtools -y
+          choco install visualstudio2019community -y
+        shell: cmd
+
+      - name: Configure Git
+        run: |
+          git config core.symlinks true
+        shell: cmd
+
+      - name: Install Python prerequisites
+        run: |
+          & 'C:\Program Files\Python37\python.exe' -m pip install setuptools psutil timeout_decorator thrift==0.11.0 osquery pywin32
+        shell: powershell
+
+      - name: Clone osquery repository
         run: |
           git clone https://github.com/osquery/osquery
           cd osquery
+        shell: cmd
+
+      - name: Configure osquery
+        run: |
           mkdir build
           cd build
           cmake -G "Visual Studio 16 2019" -A x64 ..
+        shell: cmd
+
       - name: Build osquery
         run: |
-          cd ./osquery/build 
-          cmake --build . --config Release --target osqueryd osqueryi
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: osquery-windows-binaries
-          path: build\osquery\Release\osqueryd.exe, build\osquery\Release\osqueryi.exe
-
+          cmake --build . --config RelWithDebInfo -j10
+        shell: cmd
