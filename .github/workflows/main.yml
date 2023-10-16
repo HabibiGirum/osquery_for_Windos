@@ -12,7 +12,7 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-
+    
     - name: Install Prerequisites
       run: |
         # Install Git, CMake, Python, and other prerequisites
@@ -24,7 +24,7 @@ jobs:
         choco install strawberryperl
         choco install 7zip
       shell: powershell
-
+    
     - name: Enable Long Paths
       run: |
         # Enable long paths in Windows registry
@@ -32,36 +32,36 @@ jobs:
         REG ADD HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
       shell: powershell
       continue-on-error: true
-
+    
     - name: Install Python Test Prerequisites
       run: |
         # Install Python test prerequisites
         & 'C:\Program Files\Python37\python.exe' -m pip install setuptools psutil timeout_decorator thrift==0.11.0 osquery pywin32
       shell: powershell
       continue-on-error: true
-
+    
     - name: Configure and Build osquery
       run: |
         # Navigate to the osquery directory
         git clone https://github.com/osquery/osquery
         cd osquery
-
+    
         # Create a build directory and configure the build
         mkdir build
         cd build
         cmake -G "Visual Studio 16 2019" -A x64 ..
-
+    
         # Build osquery
         cmake --build . --config RelWithDebInfo -j10
-
+    
         # Generate package data and set DESTDIR
         mkdir package_data
         $Env:DESTDIR = (Get-Location).Path + "\package_data"
         cmake --build . --target install --config Release
       shell: powershell
-
-    - name: Upload Artifact
+    
+    - name: Upload package_data
       uses: actions/upload-artifact@v2
       with:
-        name: osquery-build
-        path: ./osquery/build/package_data
+        name: osquery-package-data
+
