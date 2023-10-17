@@ -71,21 +71,21 @@ jobs:
           path: ${{ steps.build_paths.outputs.REL_SOURCE }}
 
           
-      # - name: Detect the osquery version
-      #   shell: powershell
-      #   id: osquery_version
-      #   run: |
-      #     cd ${{ steps.build_paths.outputs.REL_SOURCE }}
-      #     $osquery_version= git describe --tags --abbrev=0
+      - name: Detect the osquery version
+        shell: powershell
+        id: osquery_version
+        run: |
+          cd ${{ steps.build_paths.outputs.REL_SOURCE }}
+          $osquery_version= git describe --tags --abbrev=0
       
-      #     echo "VALUE=$osquery_version" >> $env.GITHUB_OUTPUT
+          echo "VALUE=$osquery_version" >> $env.GITHUB_OUTPUT
 
-      # - name: Clone the osquery-packaging repository
-      #   run: |
-      #     # cd w
-      #     git clone ${{ env.PACKAGING_REPO }}
-      #     cd ${{ steps.build_paths.outputs.PACKAGING }}
-      #     git checkout ${{ env.PACKAGING_COMMIT }}
+      - name: Clone the osquery-packaging repository
+        run: |
+          # cd w
+          git clone ${{ env.PACKAGING_REPO }}
+          cd ${{ steps.build_paths.outputs.PACKAGING }}
+          git checkout ${{ env.PACKAGING_COMMIT }}
 
       - name: Initialize the Python 3 installation
         uses: actions/setup-python@v2
