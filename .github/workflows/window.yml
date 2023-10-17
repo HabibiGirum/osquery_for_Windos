@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - main
-concurrency:
-  group: hosted-${{ github.event.pull_request.pull_request.number || github.run_id}}
-  cancel-in-progress: true
-  
 env:
   PACKAGING_REPO: https://github.com/osquery/osquery-packaging
   PACKAGING_COMMIT: 4caa2c54f0d893c1efa47932571046bbce156c52
@@ -80,13 +76,8 @@ jobs:
         shell: powershell
         id: osquery_version
         run: |
-          cd ${{ steps.build_paths.outputs.REL_SOURCE }}
-          $osquery_version = $(git describe --tags --abbrev=0 2>&1)
-      
-          if ($LASTEXITCODE -ne 0) {
-              echo "Error: $osquery_version"
-              exit 1
-          }
+          cd ${{ steps.build_paths.outputs.SOURCE }}
+          $osquery_version = $(git describe --tags --abbrev=0)
       
           echo "VALUE=$osquery_version" >> ${{ env.GITHUB_OUTPUT }}
 
