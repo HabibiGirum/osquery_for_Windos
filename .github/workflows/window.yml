@@ -40,14 +40,14 @@ jobs:
 
           $base_dir = (Get-Item .).FullName
 
-          echo "SOURCE = $base_dir\$rel_src_path" >> $env.GITHUB_OUTPUT
-          echo "REL_SOURCE=$rel_srch_path" >>$env:GITHUB_OUTPUT
-          echo "BINARY=$base_dir\$rel_build_path" >>$env.GITHUB_OUTPUT
-          echo "SCCACHE=$base_dir\$rel_sccache_path" >>$env.GITHUB_OUTPUT
+          echo "SOURCE=$base_dir\$rel_src_path" >> $env.GITHUB_OUTPUT
+          echo "REL_SOURCE=$rel_srch_path" >> $env:GITHUB_OUTPUT
+          echo "BINARY=$base_dir\$rel_build_path" >> $env.GITHUB_OUTPUT
+          echo "SCCACHE=$base_dir\$rel_sccache_path" >> $env.GITHUB_OUTPUT
           echo "DOWNLOADS=$base_dir\$rel_downloads_path" >> $env.GITHUB_OUTPUT
           echo "INSTALL=$base_dir\$rel_install_path" >> $env.GITHUB_OUTPUT
-          echo "PACKAGING=$base_dir\$rel_packaging_path" >>$env.GITHUB_OUTPUT
-          echo "PACKAGING_DATA=$base_dir\$rel_packaging_data_path" >>$env.GITHUB_OUTPUT
+          echo "PACKAGING=$base_dir\$rel_packaging_path" >> $env.GITHUB_OUTPUT
+          echo "PACKAGING_DATA=$base_dir\$rel_packaging_data_path" >> $env.GITHUB_OUTPUT
 
       - name: setup the VC arch
         shell: powershell
@@ -83,7 +83,7 @@ jobs:
 
       - name: Clone the osquery-packaging repository
         run: |
-          cd w
+          # cd w
           git clone ${{ env.PACKAGING_REPO }}
           cd ${{ steps.build_paths.outputs.PACKAGING }}
           git checkout ${{ env.PACKAGING_COMMIT }}
