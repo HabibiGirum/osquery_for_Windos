@@ -36,5 +36,7 @@ jobs:
 
           $base_dir = (Get-Item .).FullName
 
+          echo "SOURCE = $base_dir\$rel_src_path" >> $env.GITHUB_OUTPUT
+
           
           
