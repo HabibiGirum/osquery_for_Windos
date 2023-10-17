@@ -1,69 +1,98 @@
-name: Build osquery on Windows
+name: build
 
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
-  build:
-    runs-on: windows-latest
+  build_windows:
+
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-2019]
+        bitness: [64, arm64]
+        build_type: [Release]
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
-
-      - name: Install prerequisites
-        run: |
-          # Add registry key for long paths
-          REG ADD HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
-          # Install prerequisites using Chocolatey
-          choco install cmake --version=3.21.4 -y
-          choco install git -y
-          choco install python3 -y
-          choco install wixtoolset -y
-          choco install strawberryperl -y
-          choco install 7zip -y
-        shell: cmd
-
-      - name: Install Visual Studio 2019
-        run: |
-          choco install visualstudio2019buildtools -y
-          choco install visualstudio2019community -y
-        shell: cmd
-
-      - name: Configure Git
-        run: |
-          git config core.symlinks true
-        shell: cmd
-
-      - name: Install Python prerequisites
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install setuptools psutil timeout_decorator thrift==0.11.0 osquery pywin32
+      - name: Set up build environment
         shell: powershell
-
-      - name: Clone osquery repository
         run: |
-          git clone https://github.com/osquery/osquery
-          cd osquery
-        shell: cmd
+          # Set up build paths
+          $rel_src_path = "w/src"
+          $rel_build_path = "w/build"
+          $rel_sccache_path = "w/sccache"
+          $rel_downloads_path = "w/downloads"
+          $rel_install_path = "w/install"
+          $rel_package_data_path = "w/package_data"
+          $rel_packaging_path = "w/osquery-packaging"
 
-      - name: Configure osquery
+          New-Item -ItemType Directory -Force -Path $rel_build_path
+          New-Item -ItemType Directory -Force -Path $rel_sccache_path
+          New-Item -ItemType Directory -Force -Path $rel_downloads_path
+          New-Item -ItemType Directory -Force -Path $rel_install_path
+          New-Item -ItemType Directory -Force -Path $rel_package_data_path
+
+          $base_dir = (Get-Item .).FullName
+
+          echo "SOURCE=$base_dir\$rel_src_path" >> $env:GITHUB_ENV
+          echo "REL_SOURCE=$rel_src_path" >> $env:GITHUB_ENV
+          echo "BINARY=$base_dir\$rel_build_path" >> $env:GITHUB_ENV
+          echo "SCCACHE=$base_dir\$rel_sccache_path" >> $env:GITHUB_ENV
+          echo "DOWNLOADS=$base_dir\$rel_downloads_path" >> $env:GITHUB_ENV
+          echo "INSTALL=$base_dir\$rel_install_path" >> $env:GITHUB_ENV
+          echo "PACKAGING=$base_dir\$rel_packaging_path" >> $env:GITHUB_ENV
+          echo "PACKAGE_DATA=$base_dir\$rel_package_data_path" >> $env:GITHUB_ENV
+
+      - name: Set up VC arch
+        shell: powershell
         run: |
-          mkdir build
-          cd build
-          cmake -G "Visual Studio 16 2019" -A x64 ..
-        shell: cmd
+          $arch = switch ($env:BITNESS) {
+            "64" { "x64" }
+            "arm64" { "x64_arm64" }
+          }
+          echo "VC_ARCH=$arch" >> $env:GITHUB_ENV
 
-      - name: Build osquery
+      - name: Configure git
         run: |
-          cmake --build . --config RelWithDebInfo -j10
-        shell: cmd
+          git config --global core.autocrlf false
+          git config --global core.symlinks true
 
+      - name: Clone the osquery repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          path: ${{ env.REL_SOURCE }}
 
+      - name: Detect the osquery version
+        shell: powershell
+        run: |
+          cd ${{ env.SOURCE }}
+          $osquery_version = $(git describe --tags --abbrev=0)
+          echo "VALUE=$osquery_version" >> $env:GITHUB_ENV
+
+      - name: Clone the osquery-packaging repository
+        run: |
+          cd w
+          git clone ${{ env.PACKAGING_REPO }}
+          cd ${{ env.PACKAGING }}
+          git checkout ${{ env.PACKAGING_COMMIT }}
+
+      - name: Update the cache (git submodules)
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.SOURCE }}/.git/modules
+          key: gitmodules-${{ env.MATRIX_OS }}-${{ env.SUBMODULE_CACHE_VERSION }}-${{ github.sha }}
+          restore-keys: gitmodules-${{ env.MATRIX_OS }}-${{ env.SUBMODULE_CACHE_VERSION }}
+
+      - name: Update the cache (downloads)
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.DOWNLOADS }}
+          key: downloads-${{ env.MATRIX_OS }}-${{ github.sha }}
+          restore-keys: downloads-${{ env.MATRIX_OS }}
+
+      # Rest of the steps...
