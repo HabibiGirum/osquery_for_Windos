@@ -75,17 +75,40 @@ jobs:
         shell: powershell
         id: osquery_version
         run: |
-          cd ${{ steps.build_paths.outputs.REL_SOURCE }}
-          $osquery_version= git describe --tags --abbrev=0
-      
-          echo "VALUE=$osquery_version" >> $env.GITHUB_OUTPUT
-
+          cd ${{ steps.build_paths.outputs.SOURCE }}
+          $osquery_version=$(git describe --tags --abbrev=0)
+  
+          echo "VALUE=$osquery_version" >> $env:GITHUB_OUTPUT
+  
       - name: Clone the osquery-packaging repository
         run: |
-          # cd w
+          cd w
           git clone ${{ env.PACKAGING_REPO }}
           cd ${{ steps.build_paths.outputs.PACKAGING }}
           git checkout ${{ env.PACKAGING_COMMIT }}
+  
+      - name: Update the cache (git submodules)
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.build_paths.outputs.SOURCE }}\.git\modules
+  
+          key: |
+            gitmodules_${{ matrix.os }}_${{env.SUBMODULE_CACHE_VERSION}}_${{ github.sha }}
+  
+          restore-keys: |
+            gitmodules_${{ matrix.os }}_${{env.SUBMODULE_CACHE_VERSION}}
+  
+      - name: Update the cache (downloads)
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.build_paths.outputs.DOWNLOADS }}
+  
+          key: |
+            downloads_${{ matrix.os }}_${{ github.sha }}
+  
+          restore-keys: |
+            downloads_${{ matrix.os }}
+          
 
       - name: Initialize the Python 3 installation
         uses: actions/setup-python@v2
