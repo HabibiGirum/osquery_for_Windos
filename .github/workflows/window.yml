@@ -4,10 +4,10 @@ on:
   push:
     branches:
       - main
-# env:
-#   PACKAGING_REPO: https://github.com/osquery/osquery-packaging
-#   PACKAGING_COMMIT: 4caa2c54f0d893c1efa47932571046bbce156c52
-#   SUBMODULER_CACHE_VERSION: 2
+env:
+  PACKAGING_REPO: https://github.com/osquery/osquery-packaging
+  PACKAGING_COMMIT: 4caa2c54f0d893c1efa47932571046bbce156c52
+  SUBMODULER_CACHE_VERSION: 2
 
 jobs:
   build_windows:
@@ -72,14 +72,14 @@ jobs:
           path: ${{ steps.build_paths.outputs.REL_SOURCE }}
 
           
-      - name: Detect the osquery version
-        shell: powershell
-        id: osquery_version
-        run: |
-          cd ${{ steps.build_paths.outputs.REL_SOURCE }}
-          $osquery_version= git describe --tags --abbrev=0
+      # - name: Detect the osquery version
+      #   shell: powershell
+      #   id: osquery_version
+      #   run: |
+      #     cd ${{ steps.build_paths.outputs.REL_SOURCE }}
+      #     $osquery_version= git describe --tags --abbrev=0
       
-          echo "VALUE=$osquery_version" >> $env.GITHUB_OUTPUT
+      #     echo "VALUE=$osquery_version" >> $env.GITHUB_OUTPUT
 
 
           
