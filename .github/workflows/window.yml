@@ -19,13 +19,13 @@ jobs:
         shell: powershell
         id: build_paths
         run: |
-          $rel_src_path = "w\\src"
-          $rel_build_path = "w\\build"
-          $rel_sccache_path = "w\\sccache"
-          $rel_downloads_path = "w\\downloads"
-          $rel_install_path = "w\\install"
-          $rel_packaging_data_path = "w\\packaging_data"
-          $rel_packaging_path = "w\\osquery-packaging"
+          $rel_src_path = "w\src"
+          $rel_build_path = "w\build"
+          $rel_sccache_path = "w\sccache"
+          $rel_downloads_path = "w\downloads"
+          $rel_install_path = "w\install"
+          $rel_packaging_data_path = "w\packaging_data"
+          $rel_packaging_path = "w\osquery-packaging"
 
           New-Item -ItemType Directory -Force -Path $rel_build_path
           New-Item -ItemType Directory -Force -Path $rel_srcache_path
