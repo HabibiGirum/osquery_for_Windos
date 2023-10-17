@@ -4,6 +4,14 @@ on:
   push:
     branches:
       - main
+concurrency:
+  group: hosted-${{ github.event.pull_request.pull_request.number || github.run_id}}
+  cancel-in-progress: true
+  
+env:
+  PACKAGING_REPO: https://github.com/osquery/osquery-packaging
+  PACKAGING_COMMIT: 4caa2c54f0d893c1efa47932571046bbce156c52
+  SUBMODULER_CACHE_VERSION: 2
 
 jobs:
   build_windows:
@@ -66,6 +74,7 @@ jobs:
         with:
           fetch-depth: 0
           path: ${{ steps.build_paths.outputs.REL_SOURCE }}
+          
 
           
           
