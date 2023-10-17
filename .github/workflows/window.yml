@@ -21,7 +21,7 @@ jobs:
         run: |
           $rel_src_path = "w\\src"
           $rel_build_path = "w\\build"
-          $rel_srcache_path = "w\\sccache"
+          $rel_sccache_path = "w\\sccache"
           $rel_downloads_path = "w\\downloads"
           $rel_install_path = "w\\install"
           $rel_packaging_data_path = "w\\packaging_data"
@@ -37,6 +37,35 @@ jobs:
           $base_dir = (Get-Item .).FullName
 
           echo "SOURCE = $base_dir\$rel_src_path" >> $env.GITHUB_OUTPUT
+          echo "REL_SOURCE=$rel_srch_path" >>$env:GITHUB_OUTPUT
+          echo "BINARY=$base_dir\$rel_build_path" >>$env.GITHUB_OUTPUT
+          echo "SCCACHE=$base_dir\$rel_sccache_path" >>$env.GITHUB_OUTPUT
+          echo "DOWNLOADS=$base_dir\$rel_downloads_path" >> $env.GITHUB_OUTPUT
+          echo "INSTALL=$base_dir\$rel_install_path" >> $env.GITHUB_OUTPUT
+          echo "PACKAGING=$base_dir\$rel_packaging_path" >>$env.GITHUB_OUTPUT
+          echo "PACKAGING_DATA=$base_dir\$rel_packaging_data_path" >>$env.GITHUB_OUTPUT
+
+      - name: setup the VC arch
+        shell: powershell
+        id: vc_arch
+        run: |
+          $arch = switch ("${{ matrix.bitness }}")
+          {
+              "64" { "x64" }
+              "arm64" { "x64_arm64" }
+          }
+
+          echo "VC_ARCH=$arch" >>$env.GITHUB_OUTPUT
+
+      - name: configure git
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.symblinks true 
+      - name: clone the osquery repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          path: ${{ steps.build_paths.outputs.REL_SOURCE }}
 
           
           
