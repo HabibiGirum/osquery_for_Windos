@@ -28,27 +28,26 @@ jobs:
           $rel_sccache_path = "w\sccache"
           $rel_downloads_path = "w\downloads"
           $rel_install_path = "w\install"
-          $rel_packaging_data_path = "w\packaging_data"
+          $rel_package_data_path = "w\package_data"
           $rel_packaging_path = "w\osquery-packaging"
-
+  
           New-Item -ItemType Directory -Force -Path $rel_build_path
           New-Item -ItemType Directory -Force -Path $rel_sccache_path
           New-Item -ItemType Directory -Force -Path $rel_downloads_path
           New-Item -ItemType Directory -Force -Path $rel_install_path
-          New-Item -ItemType Directory -Force -Path $rel_packaging_data_path
-
-
+          New-Item -ItemType Directory -Force -Path $rel_package_data_path
+  
           $base_dir = (Get-Item .).FullName
-
-          echo "SOURCE=$base_dir\$rel_src_path" >> $env.GITHUB_OUTPUT
-          echo "REL_SOURCE=$rel_srch_path" >> $env:GITHUB_OUTPUT
-          echo "BINARY=$base_dir\$rel_build_path" >> $env.GITHUB_OUTPUT
-          echo "SCCACHE=$base_dir\$rel_sccache_path" >> $env.GITHUB_OUTPUT
-          echo "DOWNLOADS=$base_dir\$rel_downloads_path" >> $env.GITHUB_OUTPUT
-          echo "INSTALL=$base_dir\$rel_install_path" >> $env.GITHUB_OUTPUT
-          echo "PACKAGING=$base_dir\$rel_packaging_path" >> $env.GITHUB_OUTPUT
-          echo "PACKAGING_DATA=$base_dir\$rel_packaging_data_path" >> $env.GITHUB_OUTPUT
-
+  
+          echo "SOURCE=$base_dir\$rel_src_path" >> $env:GITHUB_OUTPUT
+          echo "REL_SOURCE=$rel_src_path" >> $env:GITHUB_OUTPUT
+          echo "BINARY=$base_dir\$rel_build_path" >> $env:GITHUB_OUTPUT
+          echo "SCCACHE=$base_dir\$rel_sccache_path" >> $env:GITHUB_OUTPUT
+          echo "DOWNLOADS=$base_dir\$rel_downloads_path" >> $env:GITHUB_OUTPUT
+          echo "INSTALL=$base_dir\$rel_install_path" >> $env:GITHUB_OUTPUT
+          echo "PACKAGING=$base_dir\$rel_packaging_path" >> $env:GITHUB_OUTPUT
+          echo "PACKAGE_DATA=$base_dir\$rel_package_data_path" >> $env:GITHUB_OUTPUT
+          
       - name: setup the VC arch
         shell: powershell
         id: vc_arch
