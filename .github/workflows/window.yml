@@ -77,7 +77,7 @@ jobs:
         id: osquery_version
         run: |
           cd ${{ steps.build_paths.outputs.SOURCE }}
-          $osquery_version = $(git describe --tags --abbrev=0)
+          $osquery_version=$(git describe --tags --abbrev=0)
       
           echo "VALUE=$osquery_version" >> $env.GITHUB_OUTPUT
 
