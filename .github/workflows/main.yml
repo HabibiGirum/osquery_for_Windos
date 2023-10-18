@@ -1,44 +1,64 @@
-name: Build osquery on Windows
+name: Build osquery for Windows
 
 on:
   push:
     branches:
-      - main  # Adjust this branch name to match your default branch
+      - main # Change this to the branch you want to trigger the build on
 
 jobs:
   build:
-    runs-on: windows-latest  # Use the latest Windows runner
+    runs-on: windows-latest
 
     steps:
-    - name: Checkout Repository
+    - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Set up Python
+    - name: Setup Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.x  # Use the appropriate Python version
+        python-version: '3.x' # Replace '3.x' with the Python version you want
+
+    - name: Install CMake
+      run: |
+        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+      shell: cmd
 
     - name: Install Visual Studio Build Tools
       run: |
-        choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Component.VC.14.28.x86.x64 --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --add Microsoft.VisualStudio.Component.VC.ClangToolset --add Microsoft.VisualStudio.Workload.NetCoreBuildTools --add Microsoft.VisualStudio.Component.NuGet.Packaging --add Microsoft.VisualStudio.Component.TextTemplating --add Microsoft.VisualStudio.Component.Wix.Toolset --add Microsoft.VisualStudio.Component.Windows10SDK.19041"
-      env:
-        chocolateyBeforePath: true  # Make sure Chocolatey is in PATH
-
-    - name: Set Visual Studio Environment Variables
-      run: |
-        $env:VSINSTALLDIR = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools'
+        choco install visualstudio2019buildtools --installargs '--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.14.29.CLI.Support --add Microsoft.VisualStudio.Component.Windows10SDK.18362'
       shell: cmd
 
-    - name: Download and Build Source
+    - name: Install Git
       run: |
-        # Clone the osquery repository
-        git clone https://github.com/osquery/osquery
-        cd osquery
+        choco install git
+      shell: cmd
 
-        # Configure
+    - name: Install WiX Toolset
+      run: |
+        choco install wixtoolset
+      shell: cmd
+
+    - name: Install Strawberry Perl
+      run: |
+        choco install strawberryperl
+      shell: cmd
+
+    - name: Install 7-Zip
+      run: |
+        choco install 7zip
+      shell: cmd
+
+    - name: Set up environment
+      run: |
+        & 'C:\Program Files\Python3x\python.exe' -m pip install setuptools psutil timeout_decorator thrift==0.11.0 osquery pywin32
+      shell: cmd
+
+    - name: Configure and Build osquery
+      run: |
+        cd osquery
         mkdir build
         cd build
-        cmake -G "Visual Studio 16 2019" -A x64 -DCMAKE_GENERATOR_PLATFORM=x64 ..
-
-        # Build
-        cmake --build . --config RelWithDebInfo -j10  # Number of projects to build in parallel
+        cmake -G "Visual Studio 16 2019" -A x64 ..
+        cmake --build . --config RelWithDebInfo -j10
+      working-directory: ./osquery
+      shell: cmd
