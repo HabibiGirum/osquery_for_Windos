@@ -45,10 +45,11 @@ jobs:
         mkdir build
         cd build
         
-        # Initialize the Visual Studio 2019 environment
+        
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
         
         cmake -G "Visual Studio 16 2019" -A x64 ..
         cmake --build . --config RelWithDebInfo -j10
       shell: cmd
+
 
