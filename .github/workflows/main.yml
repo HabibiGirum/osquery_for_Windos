@@ -50,5 +50,5 @@ jobs:
         
         cmake -G "Visual Studio 16 2019" -A x64 ..
         cmake --build . --config RelWithDebInfo -j10
-      shell: powershell
+      shell: cmd
 
