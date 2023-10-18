@@ -1,66 +1,45 @@
-name: Windows Build
+name: Build osquery on Windows
 
-on: [push]
+on:
+  push:
+    branches:
+      - main  # Adjust this branch name to match your default branch
 
 jobs:
-  step1:
-    runs-on: windows-latest
-    
+  build:
+    runs-on: windows-latest  # Use the latest Windows runner
+
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v2
-      
-    - name: Install Chocolatey
-      run: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-        
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x  # Use the appropriate Python version
+
     - name: Install Windows Prerequisites
       run: |
-        choco install cmake --version 3.21.4 -y
-        choco install visualstudio2019buildtools -y
-        choco install git -y
-        choco install python3 --params "/InstallDir:C:\Python37" -y
-        choco install wixtoolset -y
-        choco install strawberryperl -y
-        choco install 7zip -y
-        choco install python -y
-        
-    - name: Configure Git for Windows
-      run: |
-        git config --global core.symlinks true
-        git config --global core.autocrlf false
-    - name: Install CMake
-      shell: powershell
-      run: |
-        choco uninstall cmake --force -y
-        Invoke-WebRequest -Uri 'https://cmake.org/files/v3.21/cmake-3.21.4-windows-x86_64.msi' -OutFile 'cmake.msi'
-        Start-Process -Wait -FilePath 'msiexec.exe' -ArgumentList '/i', 'cmake.msi', '/qn'
-        Remove-Item 'cmake.msi' -Force
-        [System.Environment]::SetEnvironmentVariable('Path', "$($env:Path);C:\Program Files\CMake\bin", [System.EnvironmentVariableTarget]::Machine)
-        cmake --version
-      
+        # Install CMake
+        choco install cmake --version 3.21.4
+        # Install Visual Studio Build Tools (adjust workload as needed)
+        choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Component.VC.14.28.x86.x64 --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --add Microsoft.VisualStudio.Component.VC.ClangToolset --add Microsoft.VisualStudio.Workload.NetCoreBuildTools --add Microsoft.VisualStudio.Component.NuGet.Packaging --add Microsoft.VisualStudio.Component.TextTemplating --add Microsoft.VisualStudio.Component.Wix.Toolset --add Microsoft.VisualStudio.Component.Windows10SDK.19041"
+        # Install Git for Windows
+        choco install git
+        # Install Python 3 dependencies
+        pip install setuptools psutil timeout_decorator thrift==0.11.0 osquery pywin32
 
-
-  step2:
-    needs: step1
-    runs-on: windows-latest
-    
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
-      
     - name: Download and Build Source
       run: |
+        # Clone the osquery repository
         git clone https://github.com/osquery/osquery
         cd osquery
+
+        # Configure
         mkdir build
         cd build
-        
-        
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
-        
         cmake -G "Visual Studio 16 2019" -A x64 ..
-        cmake --build . --config RelWithDebInfo -j10
-      shell: cmd
 
+        # Build
+        cmake --build . --config RelWithDebInfo -j10  # Number of projects to build in parallel
 
