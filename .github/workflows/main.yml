@@ -29,6 +29,17 @@ jobs:
       run: |
         git config --global core.symlinks true
         git config --global core.autocrlf false
+    - name: Install CMake
+      shell: powershell
+      run: |
+        choco uninstall cmake --force -y
+        Invoke-WebRequest -Uri 'https://cmake.org/files/v3.21/cmake-3.21.4-windows-x86_64.msi' -OutFile 'cmake.msi'
+        Start-Process -Wait -FilePath 'msiexec.exe' -ArgumentList '/i', 'cmake.msi', '/qn'
+        Remove-Item 'cmake.msi' -Force
+        [System.Environment]::SetEnvironmentVariable('Path', "$($env:Path);C:\Program Files\CMake\bin", [System.EnvironmentVariableTarget]::Machine)
+        cmake --version
+      
+
 
   step2:
     needs: step1
