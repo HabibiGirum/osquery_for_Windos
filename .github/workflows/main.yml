@@ -1,52 +1,48 @@
-name: Build osquery on Windows
+name: Windows Build
 
-on:
-  push:
-    branches:
-      - master
+on: [push]
 
 jobs:
-  build:
+  step1:
     runs-on: windows-latest
-
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+      
+    - name: Install Chocolatey
+      run: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+        
+    - name: Install Windows Prerequisites
+      run: |
+        choco install cmake --version 3.21.4 -y
+        choco install visualstudio2019buildtools -y
+        choco install git -y
+        choco install python3 --params "/InstallDir:C:\Python37" -y
+        choco install wixtoolset -y
+        choco install strawberryperl -y
+        choco install 7zip -y
+        choco install python -y
+        
+    - name: Configure Git for Windows
+      run: |
+        git config --global core.symlinks true
+        git config --global core.autocrlf input
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
-
-      - name: Install prerequisites
-        run: |
-          REG ADD HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
-          choco install cmake --version=3.21.4 -y
-          choco install visualstudio2019buildtools --params="'--add Microsoft.VisualStudio.Workload.NativeDesktop --includeOptional --add Microsoft.VisualStudio.Component.VC.ClangToolset'"
-          choco install git -y
-          choco install python3 -y
-          choco install wixtoolset -y
-          choco install strawberryperl -y
-          choco install 7zip -y
-        shell: powershell
-
-      - name: Configure Git
-        run: |
-          git config --global core.symlinks true
-        shell: powershell
-
-      - name: Install Python prerequisites
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install setuptools psutil timeout_decorator thrift==0.11.0 osquery pywin32
-        shell: powershell
-
-      - name: Clone osquery repository and build
-        run: |
-          git clone https://github.com/osquery/osquery
-          cd osquery
-          mkdir build
-          cd build
-          cmake -G "Visual Studio 16 2019" -A x64 ..
-          cmake --build . --config RelWithDebInfo -j2
-        shell: powershell
+  step2:
+    needs: step1
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+      
+    - name: Download and Build Source
+      run: |
+        git clone https://github.com/osquery/osquery
+        cd osquery
+        mkdir build
+        cd build
+        cmake -G "Visual Studio 16 2019" -A x64 ..
+        cmake --build . --config RelWithDebInfo -j10
