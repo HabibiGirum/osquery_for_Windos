@@ -18,16 +18,16 @@ jobs:
       with:
         python-version: 3.x  # Use the appropriate Python version
 
-    - name: Install Windows Prerequisites
+    - name: Install Visual Studio Build Tools
       run: |
-        # Install CMake
-        choco install cmake --version 3.21.4
-        # Install Visual Studio Build Tools (adjust workload as needed)
         choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Component.VC.14.28.x86.x64 --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --add Microsoft.VisualStudio.Component.VC.ClangToolset --add Microsoft.VisualStudio.Workload.NetCoreBuildTools --add Microsoft.VisualStudio.Component.NuGet.Packaging --add Microsoft.VisualStudio.Component.TextTemplating --add Microsoft.VisualStudio.Component.Wix.Toolset --add Microsoft.VisualStudio.Component.Windows10SDK.19041"
-        # Install Git for Windows
-        choco install git
-        # Install Python 3 dependencies
-        pip install setuptools psutil timeout_decorator thrift==0.11.0 osquery pywin32
+      env:
+        chocolateyBeforePath: true  # Make sure Chocolatey is in PATH
+
+    - name: Set Visual Studio Environment Variables
+      run: |
+        $env:VSINSTALLDIR = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools'
+      shell: cmd
 
     - name: Download and Build Source
       run: |
@@ -38,8 +38,7 @@ jobs:
         # Configure
         mkdir build
         cd build
-        cmake -G "Visual Studio 16 2019" -A x64 ..
+        cmake -G "Visual Studio 16 2019" -A x64 -DCMAKE_GENERATOR_PLATFORM=x64 ..
 
         # Build
         cmake --build . --config RelWithDebInfo -j10  # Number of projects to build in parallel
-
