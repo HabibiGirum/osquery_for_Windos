@@ -1,64 +1,26 @@
-name: Build osquery for Windows
-
+name: build
 on:
   push:
     branches:
-      - main # Change this to the branch you want to trigger the build on
+      - main
 
 jobs:
   build:
-    runs-on: windows-latest
-
+    runs-on: windows-leatst 
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-
-    - name: Setup Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x' # Replace '3.x' with the Python version you want
-
-    - name: Install CMake
-      run: |
-        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
-      shell: cmd
-
-    - name: Install Visual Studio Build Tools
-      run: |
-        choco install visualstudio2019buildtools --installargs '--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.14.29.CLI.Support --add Microsoft.VisualStudio.Component.Windows10SDK.18362'
-      shell: cmd
-
-    - name: Install Git
+    - name: Install git
       run: |
         choco install git
-      shell: cmd
+        
 
-    - name: Install WiX Toolset
-      run: |
-        choco install wixtoolset
-      shell: cmd
+    - name: Clone osquery repository
+      run: git clone https://github.com/osquery/osquery.git
+      
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: Build
+        path: ./osquery
 
-    - name: Install Strawberry Perl
-      run: |
-        choco install strawberryperl
-      shell: cmd
-
-    - name: Install 7-Zip
-      run: |
-        choco install 7zip
-      shell: cmd
-
-    - name: Set up environment
-      run: |
-        & 'C:\Program Files\Python3x\python.exe' -m pip install setuptools psutil timeout_decorator thrift==0.11.0 osquery pywin32
-      shell: cmd
-
-    - name: Configure and Build osquery
-      run: |
-        cd osquery
-        mkdir build
-        cd build
-        cmake -G "Visual Studio 16 2019" -A x64 ..
-        cmake --build . --config RelWithDebInfo -j10
-      working-directory: ./osquery
-      shell: cmd
