@@ -146,7 +146,12 @@ jobs:
                                 osquery `
                                 pywin32
 
-                                
+      - name: clone osquery
+        working-directory: ${{ steps.build_paths.outputs.SOURCE }}
+        shell: powershell
+        run: |
+          git clone https://github.com/osquery/osquery.git
+          
       - name: Install Strawberry Perl
         working-directory: ${{ steps.build_paths.outputs.SOURCE }}
         shell: powershell
